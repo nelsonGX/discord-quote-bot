@@ -1,4 +1,5 @@
 import discord
+from classes.imagegen import ImageGen
 
 client = discord.Client(intents=discord.Intents.default())
 
@@ -12,6 +13,10 @@ async def on_message(message):
         return
 
     if message.content.startswith('/q'):
-        await message.channel.send('Hello!')
+        if message.content == "/q":
+            q = 1
+        else:
+            q = int(message.content.split(" ")[1])
+        ImageGen.generate_discord_chat()
 
 client.run("")
