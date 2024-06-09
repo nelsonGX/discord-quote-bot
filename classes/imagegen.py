@@ -3,6 +3,30 @@ import json
 import mistune
 import re
 
+def process_json(json_data):
+    for item in json_data:
+        if item['type'] == 'paragraph' or item['type'] == 'list_item':
+            process_json(item['children']) 
+        elif item['type'] == 'text':
+            print(item['raw'], end='')
+        elif item['type'] == 'strong':
+            print('\033[1m' + item['children'][0]['raw'] + '\033[0m', end='')
+        elif item['type'] == 'emphasis':
+            print('\033[3m' + item['children'][0]['raw'] + '\033[0m', end='')
+        elif item['type'] == 'heading':
+            print('\n' + '#' * item['attrs']['level'], end='')
+            process_json(item['children'])
+        elif item['type'] == 'block_quote':
+            print('\n>', end='')
+            process_json(item['children'])
+        elif item['type'] == 'block_code':
+            print('\n```' + item['attrs']['info'] + '\n' + item['raw'] + '```')
+        elif item['type'] == 'list':
+            for child in item['children']:
+                print('\n' + ('-' if item['bullet'] == '-' else str(item['children'].index(child) + 1) + '.'), end='')
+                process_json(child['children'])
+        elif item['type'] == 'link':
+            print('[' + item['children'][0]['raw'] + '](' + item['attrs']['url'] + ')', end='')
 class ImageGen:
     markdown = mistune.create_markdown(renderer='ast')
 
@@ -58,29 +82,5 @@ class ImageGen:
     print(json_string)
     json_data = json.loads(json_string)
 
-    def process_json(json_data):
-        for item in json_data:
-            if item['type'] == 'paragraph' or item['type'] == 'list_item':
-                process_json(item['children'])
-            elif item['type'] == 'text':
-                print(item['raw'], end='')
-            elif item['type'] == 'strong':
-                print('\033[1m' + item['children'][0]['raw'] + '\033[0m', end='')
-            elif item['type'] == 'emphasis':
-                print('\033[3m' + item['children'][0]['raw'] + '\033[0m', end='')
-            elif item['type'] == 'heading':
-                print('\n' + '#' * item['attrs']['level'], end='')
-                process_json(item['children'])
-            elif item['type'] == 'block_quote':
-                print('\n>', end='')
-                process_json(item['children'])
-            elif item['type'] == 'block_code':
-                print('\n```' + item['attrs']['info'] + '\n' + item['raw'] + '```')
-            elif item['type'] == 'list':
-                for child in item['children']:
-                    print('\n' + ('-' if item['bullet'] == '-' else str(item['children'].index(child) + 1) + '.'), end='')
-                    process_json(child['children'])
-            elif item['type'] == 'link':
-                print('[' + item['children'][0]['raw'] + '](' + item['attrs']['url'] + ')', end='')
 
     # print(process_json(json_data))
